@@ -16,7 +16,7 @@
       url: "{{ tower_url }}/api/v2/credential_types/{{ credential_id }}/"
       return_content: true
       method: patch
-      body: "{{ lookup('template', 'custom_cred.j2') }}"
+      body: "{{ lookup('template', 'custom_cred_type.j2') }}"
       status_code: 200
       body_format: json
       content: application/json
