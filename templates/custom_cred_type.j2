@@ -1,0 +1,44 @@
+{
+  "name": "{{ credential_name }}",
+  "description": "",
+  "kind": "cloud",
+  "inputs": {
+    "fields": [
+{% for domain in domains %}
+      {
+        "id": "{{ domain }}_user",
+        "type": "string",
+        "label": "{{ domain|upper }} User"
+      },
+      {
+        "id": "{{ domain }}_password",
+        "type": "string",
+        "label": "{{ domain|upper }} Password",
+        "secret": true
+      },
+      {
+        "id": "{{ domain }}_become_password",
+        "type": "string",
+        "label": "{{ domain|upper }} Become Password",
+        "secret": true
+      }{{ "," if not loop.last }}
+{% endfor %}
+    ],
+    "required": [
+{% for domain in domains %}
+      "{{ domain }}_user",
+      "{{ domain }}_password",
+      "{{ domain }}_become_password"{{ "," if not loop.last }}
+{% endfor %}
+    ]
+  },
+  "injectors": {
+    "extra_vars": {
+{% for domain in domains %}
+      "{{ domain }}_pass": {% raw %}"{{ {% endraw %}{{ domain }}_password{% raw %} }}"{% endraw %},
+      "{{ domain }}_user": {% raw %}"{{ {% endraw %}{{ domain }}_user{% raw %} }}"{% endraw %},
+      "{{ domain }}_become_pass": {% raw %}"{{ {% endraw %}{{ domain }}_become_password{% raw %} }}"{% endraw %}{{ "," if not loop.last }}
+{% endfor %}
+    }
+  }
+}
