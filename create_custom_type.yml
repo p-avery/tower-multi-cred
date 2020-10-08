@@ -1,0 +1,29 @@
+---
+- name: create a multi custom credential for domains
+  hosts: localhost
+  vars:
+    tower_url: https://tower.example.com
+    credential_name: test-cred-multi
+    domains: 
+    - ap
+    - emea
+    - na
+  tasks:
+
+  - name: create the custom credential type
+    uri:
+      url: "{{ tower_url }}/api/v2/credential_types/"
+      return_content: true
+      method: post
+      body: "{{ lookup('template', 'custom_cred_type.j2') }}"
+      status_code: 201
+      body_format: json
+      content: application/json
+      validate_certs: false
+      force_basic_auth: yes
+      user: admin
+      password: Secret
+    register: output
+
+  - debug:
+      var: output
