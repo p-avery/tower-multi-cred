@@ -52,12 +52,6 @@
         owner: awx
         group: awx
 
-    - name: Change file ownership, group and permissions
-      file:
-        path: "/var/lib/awx/{{ keytab_store }}"
-        owner: awx
-        group: awx
-
     - name: import the users from the keytab
       shell: "/bin/kinit {{ item.username }}@{{ item.realm }} -k -t /var/lib/awx/{{ keytab_store }}"
       become: true
