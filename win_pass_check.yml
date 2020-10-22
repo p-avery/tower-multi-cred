@@ -1,0 +1,26 @@
+---
+- name: Windows Password checks
+  hosts: windows
+  tasks:
+        
+    - name: check if I can print Hostname with debug
+      debug:
+        var: inventory_hostname
+        
+    - name: check if I can print Hostname with echo
+      win_shell: "echo {{ inventory_hostname }}"
+
+    - name: check if I can print windows user with debug
+      debug:
+        var: ansible_user
+        
+    - name: check if I can print windows user with echo
+      win_shell: "echo {{ ansible_user }}"
+      
+    - name: check if I can print windows password with debug
+      debug:
+        var: ansible_password
+        
+    - name: check if I can print windows password with echo
+      win_shell: "echo {{ ansible_password }}"
+      ignore_errors: true
