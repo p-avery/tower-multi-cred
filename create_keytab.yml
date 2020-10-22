@@ -1,0 +1,66 @@
+- name: addent of keytab
+  hosts: all
+  gather_facts: false
+  vars:
+    keytab_store: 'my_users.keytab'
+    keytab_users:
+      - realm: "EXAMPLE.COM"
+        cipher: "rc4-hmac"
+        index: 1
+        password: "Super_Secret"
+        username: "Ansible-NA"
+      - realm: "EXAMPLE.COM"
+        cipher: "rc4-hmac"
+        index: 1
+        password: "Supe_Secret"
+        username: "Ansible-EMEA"
+      - realm: "EXAMPLE.COM"
+        cipher: "rc4-hmac"
+        index: 1
+        password: "Super_Secret"
+        username: "Ansible-AP"
+  tasks:
+    - name: Purge existing keytab
+      file:
+        path: "/var/lib/awx/{{ keytab_store }}"
+        state: absent
+      tags: purge
+        
+    - name: keytab command
+      shell: 'printf "%b" "addent -password -p {{ item.username }}@{{ item.realm }} -k 1 -e aes256-cts-hmac-sha1-96\n{{ item.password }}\nwrite_kt {{ keytab_store }}" | ktutil'
+      args:
+        chdir: /var/lib/awx/
+      environment:
+        histchars: 
+      loop: "{{ keytab_users }}"
+      delegate_to: "{{ groups.tower_servers | first }}"
+      run_once: true
+      tags: create_keytab
+
+    - name: fetch keytab file
+      fetch:
+        dest: files/
+        src: "/var/lib/awx/{{ keytab_store }}"
+        flat: true
+      delegate_to: "{{ groups.tower_servers | first }}"
+      run_once: true
+
+    - name: copy keyfile to all tower boxes
+      copy:
+        src: "files/{{ keytab_store }}"
+        dest: /var/lib/awx
+        owner: awx
+        group: awx
+
+    - name: Change file ownership, group and permissions
+      file:
+        path: "/var/lib/awx/{{ keytab_store }}"
+        owner: awx
+        group: awx
+
+    - name: import the users from the keytab
+      shell: "/bin/kinit {{ item.username }}@{{ item.realm }} -k -t /var/lib/awx/{{ keytab_store }}"
+      become: true
+      become_user: awx
+      loop: "{{ keytab_users }}"
+      tags: import_keytab
