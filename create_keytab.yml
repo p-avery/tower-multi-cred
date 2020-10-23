@@ -25,13 +25,17 @@
         path: "/var/lib/awx/{{ keytab_store }}"
         state: absent
       tags: purge
-        
+
     - name: keytab command
-      shell: 'printf "%b" "addent -password -p {{ item.username }}@{{ item.realm }} -k 1 -e aes256-cts-hmac-sha1-96\n{{ item.password }}\nwrite_kt {{ keytab_store }}" | ktutil'
+      shell: ktutil
       args:
+        stdin: |
+          addent -password -p {{ item.username }}@{{ item.realm }} -k 1 -e aes256-cts-hmac-sha1-96
+          {{ item.password }}
+          write_kt {{ keytab_store }}
         chdir: /var/lib/awx/
       environment:
-        histchars: 
+        histchars:
       loop: "{{ keytab_users }}"
       delegate_to: "{{ groups.tower_servers | first }}"
       run_once: true
