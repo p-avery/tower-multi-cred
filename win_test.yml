@@ -1,0 +1,15 @@
+---
+- name: windows test playbook
+  hosts: windows
+  gather_facts: false
+  tasks:
+    - local_action:
+        module: shell
+        _raw_params: 'ls -al'
+
+    - local_action:
+        module: shell
+        _raw_params: 'kinit ansible@LAB.INT -k -t /kinit/username.keytab'
+
+    - name: ping windows box
+      win_ping:
